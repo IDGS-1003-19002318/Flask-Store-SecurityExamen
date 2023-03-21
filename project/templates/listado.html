@@ -1,0 +1,72 @@
+{% extends 'layout.html' %}
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="text-center">Listado de productos</h1>
+        </div>
+    </div>
+    <div class="row my-5">
+        <div class="col-12">
+            {% if roles == 'admin' %}
+            <a href="{{ url_for('admin.agregar') }}" class="btn btn-primary">Nuevo producto</a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="row my-5">
+        <div class="col-12">
+            {% if roles == 'admin' %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Precio</th>
+                        <th>Descripcion</th>
+                        <th>Cantidad Stock</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for producto in productos %}
+                    <tr>
+                        <td>{{ producto.name }}</td>
+                        <td>{{ producto.price }}</td>
+                        <td>{{ producto.description }}</td>
+                        <td>{{ producto.stock }}</td>
+                        <td>
+                            <a href="{{ url_for('admin.modificar', id=producto.id) }}" class="btn btn-warning">
+                                <i class="bi bi-pencil-square icon-white"></i>
+                            </a>
+                            <a href="{{ url_for('admin.eliminar', id=producto.id) }}" class="btn btn-danger">
+                                <i class="bi bi-trash3-fill icon-white"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="row my-5">
+                {% for producto in productos %}
+                <div class="col-4 mt-3">
+                    <div class="card" style="width: 18rem;">
+                        <img src="{{producto.image}}" class="card-img-top" alt="...">
+                        <div class="card-body">
+                            <h5 class="card-title">{{producto.name}}</h5>
+                            <p class="card-text">{{producto.description}}</p>
+                        </div>
+                        <div class="card-footer text-muted">
+                            <p class="card-text">{{producto.price}}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}
