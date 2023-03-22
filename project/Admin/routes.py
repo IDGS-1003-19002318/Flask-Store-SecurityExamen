@@ -33,7 +33,7 @@ def modificar():
         producto.description = form.description.data
         producto.image = form.image.data
         db.session.commit()
-        return redirect(url_for('main.ProductosAll'))
+        return redirect(url_for('user.productosAll'))
     return render_template('admin/modificar.html', form=form)
     
     
@@ -46,7 +46,7 @@ def eliminar():
     producto = Productos.query.get(id)
     db.session.delete(producto)
     db.session.commit()
-    return redirect(url_for('main.ProductosAll'))
+    return redirect(url_for('user.productosAll'))
 
 
 @admin.route('/agregar', methods=['GET','POST'])
@@ -61,5 +61,5 @@ def agregar():
                             image=form.image.data)
         db.session.add(product)
         db.session.commit()
-        return redirect(url_for('main.ProductosAll'))
+        return redirect(url_for('user.productosAll'))
     return render_template('admin/agregar.html', form=form)    

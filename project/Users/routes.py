@@ -1,25 +1,31 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_security import login_required, SQLAlchemyUserDatastore, Security, current_user
-from flask_security.utils import login_user,logout_user#, hash_password, encrypt_password
-from models import Product, db, Role, User
+from flask import Blueprint, render_template
+from flask_security import login_required, current_user
+from flask_security.decorators import roles_required, roles_accepted
+from models import Product as Productos
+# from . import db
+
+user = Blueprint('user', __name__)
 
 
-admin = Blueprint('auth', __name__#, url_prefix='/admin'
-                  )
-userDataStore = SQLAlchemyUserDatastore(db, User, Role)
+@user.route('/')
+def index():
+    return render_template('index.html')
 
 
-@admin.route("/dashboard")
-def dashboard():
-    return render_template('listado.html')
+@user.route('/profile')
+@login_required
+@roles_accepted('admin', 'user')
+def profile():
+    return render_template('profile.html', name=current_user.name)
 
 
-@admin.route("/modificar")
-def modificar():
-    pass
-
-
-@admin.route('/eliminar')
-def eliminar():
-    pass
+@user.route('/listado')
+@login_required
+@roles_accepted('admin', 'user')
+def productosAll():
+    productos = Productos.query.all()
+    ''' print(productos)
+    for p in productos:
+        print(p.name) '''
+    return render_template('/user/listado.html', productos=productos, roles=current_user.roles[0].name)
+    

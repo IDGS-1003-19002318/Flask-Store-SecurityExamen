@@ -2,12 +2,12 @@
 from flask import Flask
 from flask_security import Security, SQLAlchemyUserDatastore
 from flask_wtf.csrf import CSRFProtect
-#from Auth.routes import auth as auth_blueprint
 from Auth.routes import auth as auth_blueprint
 from Admin.routes import admin as admin_blueprint
+from Users.routes import user as main_blueprint
 from models import db, User, Role
 from config import DevelopmentConfig
-from main import main as main_blueprint
+
 
 app = Flask(__name__)
 app.config.from_object(DevelopmentConfig)
@@ -16,7 +16,6 @@ userDataStore = SQLAlchemyUserDatastore(db, User, Role)
 
 
 app.register_blueprint(auth_blueprint)
-# blueprint for non-auth parts of app
 app.register_blueprint(admin_blueprint)
 app.register_blueprint(main_blueprint)
 
