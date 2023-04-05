@@ -7,12 +7,14 @@ from Admin.routes import admin as admin_blueprint
 from Users.routes import user as main_blueprint
 from models import db, User, Role
 from config import DevelopmentConfig
+from logger import Logger
 
 
 app = Flask(__name__)
 app.config.from_object(DevelopmentConfig)
 csrf = CSRFProtect()
 userDataStore = SQLAlchemyUserDatastore(db, User, Role)
+log = Logger('app')
 
 
 app.register_blueprint(auth_blueprint)
@@ -28,5 +30,5 @@ if __name__ == '__main__':
         db.create_all()
 
     Security(app, userDataStore)
-
+    log.info('Servidor iniciado')
     app.run(port=3000)

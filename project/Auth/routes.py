@@ -2,16 +2,18 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_security import login_required, SQLAlchemyUserDatastore, Security, current_user
-from flask_security.utils import login_user,logout_user#, hash_password, encrypt_password
+from flask_security.utils import login_user,logout_user
 from models import User, db, Role
+from logger import Logger
 #from app import userDataStore
 
 auth = Blueprint('auth', __name__, url_prefix='/security')
 userDataStore = SQLAlchemyUserDatastore(db, User, Role)
+log = Logger('auth')
 
 @auth.route('/login')
 def login():
-    return render_template('security/login.html') #posible puede ser con antes de se /
+    return render_template('security/login.html')
 
 
 @auth.route('/login', methods=['POST'])
@@ -22,14 +24,12 @@ def login_post():
 
     user = User.query.filter_by(email=email).first()
 
-    # check if user actually exists
-    # take the user supplied password, hash it, and compare it to the hashed password in database
     if not user or not check_password_hash(user.password, password):
-        flash('Please check your login details and try again.')
-        return redirect(url_for('auth.login'))  # if user doesn't exist or password is wrong, reload the page
+        log.error('Usuario {} no encontrado'.format(email))
+        return redirect(url_for('auth.login'))
 
-    # if the above check passes, then we know the user has the right credentials
     login_user(user, remember=remember)
+    log.debug('Usuario {} logueado'.format(current_user.email))
     return redirect(url_for('user.profile'))
 
 
@@ -45,15 +45,15 @@ def register_post():
     password = request.form.get('password')
 
     user = User.query.filter_by(
-        email=email).first()  # if this returns a user, then the email already exists in database
+        email=email).first()
 
-    if user:  # if a user is found, we want to redirect back to signup page so user can try again
-        flash('Email address already exists')
+    if user:
+        log.error('Usuario {} ya existente {}'.format(email))
         return redirect(url_for('auth.register'))
 
-    # create new user with the form data. Hash the password so plaintext version isn't saved.
     userDataStore.create_user(name=name,email=email,password=generate_password_hash(password, method='sha256'))
     db.session.commit()
+    log.debug('Usuario {} registrado'.format(email))
 
     return redirect(url_for('auth.login'))
 
@@ -61,5 +61,6 @@ def register_post():
 @auth.route('/logout')
 @login_required
 def logout():
+    log.debug('Usuario {} logout'.format(current_user.email))
     logout_user()
     return redirect(url_for('user.index'))

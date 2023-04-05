@@ -1,13 +1,14 @@
-from flask import Blueprint, render_template, request, redirect, url_for
-#from flask_security import login_required, current_user
 import os
-from werkzeug.utils import secure_filename
-from flask_security.decorators import roles_required, roles_accepted
-from models import Product as Productos, db
 import forms
+from flask import Blueprint, render_template, request, redirect, url_for
+#from werkzeug.utils import secure_filename
+from flask_security import current_user
+from flask_security.decorators import roles_accepted
+from models import Product as Productos, db
+from logger import Logger
 
 admin = Blueprint('admin', __name__)
-
+log = Logger('admin')
 
 
 @admin.route("/modificar", methods=['GET','POST'])
@@ -16,7 +17,6 @@ def modificar():
     form = forms.ProductForm(request.form)
     if request.method == 'GET':
         id = request.args.get('id')
-        print(id)
         producto = Productos.query.get(id)
         form.id.data = producto.id
         form.name.data = producto.name
@@ -32,7 +32,9 @@ def modificar():
         producto.stock = form.stock.data
         producto.description = form.description.data
         producto.image = form.image.data
+        db.session.add(producto)
         db.session.commit()
+        log.debug('Producto {} modificado por {}'.format(id, current_user.email))
         return redirect(url_for('user.productosAll'))
     return render_template('admin/modificar.html', form=form)
     
@@ -46,6 +48,7 @@ def eliminar():
     producto = Productos.query.get(id)
     db.session.delete(producto)
     db.session.commit()
+    log.debug('Producto {} eliminado por {}'.format(id, current_user.email))
     return redirect(url_for('user.productosAll'))
 
 
@@ -61,5 +64,6 @@ def agregar():
                             image=form.image.data)
         db.session.add(product)
         db.session.commit()
+        log.debug('Producto {} agregado por {}'.format(product.id, current_user.email))
         return redirect(url_for('user.productosAll'))
     return render_template('admin/agregar.html', form=form)    
